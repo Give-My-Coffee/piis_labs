@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Graphic Editor</title>
+    <style>
+        #drawing-area {
+            border: 1px solid black;
+            width: 800px;
+            height: 600px;
+        }
+        .toolbar {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <button id="circle-btn">Круг</button>
+        <button id="rect-btn">Квадрат</button>
+    </div>
+
+    <svg id="drawing-area"></svg>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const svg = document.getElementById('drawing-area'); // Получаем элемент <svg>
+            let shape = 'circle'; // По умолчанию рисуем круг
+            let isDrawing = false; // Флаг для отслеживания состояния рисования
+            let startX, startY, currentShape; // Переменные для хранения начальных координат и текущей фигуры
+
+            // Обработчик для кнопки "Круг"
+            document.getElementById('circle-btn').addEventListener('click', () => {
+                shape = 'circle'; 
+            });
+
+            // Обработчик для кнопки "Квадрат"
+            document.getElementById('rect-btn').addEventListener('click', () => {
+                shape = 'rect'; 
+            });
+
+            // Обработчик события mousedown
+            svg.addEventListener('mousedown', (e) => {
+                isDrawing = true; // Устанавливаем флаг рисования
+                startX = e.offsetX; // Сохраняем начальную координату X
+                startY = e.offsetY; 
+
+                if (shape === 'circle') {
+                    // Создаем элемент <circle> для круга
+                    currentShape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    currentShape.setAttribute('cx', startX);
+                    currentShape.setAttribute('cy', startY);
+                    currentShape.setAttribute('r', 0);
+                    currentShape.setAttribute('fill', 'gray'); // Заливка
+                    currentShape.setAttribute('stroke', 'black'); // Обводка
+                } else if (shape === 'rect') {
+                    // Создаем элемент <rect> для квадрата
+                    currentShape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    currentShape.setAttribute('x', startX);
+                    currentShape.setAttribute('y', startY);
+                    currentShape.setAttribute('width', 0);
+                    currentShape.setAttribute('height', 0);
+                    currentShape.setAttribute('fill', 'gray'); // Заливка
+                    currentShape.setAttribute('stroke', 'black'); // Обводка
+                }
+
+                svg.appendChild(currentShape); // Добавляем фигуру в <svg>
+            });
+
+            // Обработчик события mousemove для рисования фигуры
+            svg.addEventListener('mousemove', (e) => {
+                if (!isDrawing) return; // Если не рисуем, выходим из функции
+
+                const currentX = e.offsetX; // Текущая координата X
+                const currentY = e.offsetY; 
+
+                if (shape === 'circle') {
+                    // Вычисляем радиус круга
+                    const radius = Math.sqrt(Math.pow(currentX - startX, 2) + Math.pow(currentY - startY, 2));
+                    currentShape.setAttribute('r', radius); // Устанавливаем радиус круга
+                } else if (shape === 'rect') {
+                    // Вычисляем ширину и высоту квадрата
+                    const width = currentX - startX;
+                    const height = currentY - startY;
+                    currentShape.setAttribute('width', Math.abs(width)); // Устанавливаем ширину квадрата
+                    currentShape.setAttribute('height', Math.abs(height)); 
+                    if (width < 0) currentShape.setAttribute('x', currentX); // Корректируем координату X, если ширина отрицательная
+                    if (height < 0) currentShape.setAttribute('y', currentY); 
+                }
+            });
+
+            // Обработчик события mouseup для завершения рисования
+            svg.addEventListener('mouseup', () => {
+                isDrawing = false; // Сбрасываем флаг рисования
+            });
+
+            // Обработчик события mouseleave для завершения рисования при выходе за пределы <svg>
+            svg.addEventListener('mouseleave', () => {
+                isDrawing = false; // Сбрасываем флаг рисования
+            });
+        });
+    </script>
+</body>
+</html>

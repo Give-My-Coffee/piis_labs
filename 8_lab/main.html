@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Graphic Editor</title>
+    <style>
+        #drawing-area {
+            border: 1px solid black;
+            width: 800px;
+            height: 600px;
+        }
+        .toolbar {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <button id="circle-btn">Круг</button>
+        <button id="rect-btn">Квадрат</button>
+    </div>
+    <canvas id="drawing-area" width="800" height="600"></canvas>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('drawing-area');
+            const ctx = canvas.getContext('2d');
+            let shape = 'circle'; // По умолчанию рисуем круг
+            let isDrawing = false;
+            let startX, startY;
+            const shapes = []; // Массив для хранения всех фигур
+
+            document.getElementById('circle-btn').addEventListener('click', () => {
+                shape = 'circle';
+            });
+
+            document.getElementById('rect-btn').addEventListener('click', () => {
+                shape = 'rect';
+            });
+
+            canvas.addEventListener('mousedown', (e) => {
+                isDrawing = true;
+                startX = e.offsetX;
+                startY = e.offsetY;
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (!isDrawing) return;
+
+                const currentX = e.offsetX;
+                const currentY = e.offsetY;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height); // Очищаем холст
+
+                // Перерисовываем все сохраненные фигуры
+                shapes.forEach(shape => {
+                    drawShape(shape);
+                });
+
+                // Рисуем текущую фигуру
+                const newShape = {
+                    type: shape,
+                    startX,
+                    startY,
+                    currentX,
+                    currentY
+                };
+                drawShape(newShape);
+            });
+
+            canvas.addEventListener('mouseup', (e) => {
+                if (isDrawing) {
+                    const currentX = e.offsetX;
+                    const currentY = e.offsetY;
+                    shapes.push({
+                        type: shape,
+                        startX,
+                        startY,
+                        currentX,
+                        currentY
+                    });
+                }
+                isDrawing = false;
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                isDrawing = false;
+            });
+
+            function drawShape({ type, startX, startY, currentX, currentY }) {
+                if (type === 'circle') {
+                    const radius = Math.sqrt(Math.pow(currentX - startX, 2) + Math.pow(currentY - startY, 2));
+                    ctx.beginPath();
+                    ctx.arc(startX, startY, radius, 0, Math.PI * 2);
+                    ctx.fillStyle = 'gray';
+                    ctx.fill();
+                    ctx.strokeStyle = 'black';
+                    ctx.stroke();
+                } else if (type === 'rect') {
+                    const width = currentX - startX;
+                    const height = currentY - startY;
+                    ctx.beginPath();
+                    ctx.rect(startX, startY, width, height);
+                    ctx.fillStyle = 'gray';
+                    ctx.fill();
+                    ctx.strokeStyle = 'black';
+                    ctx.stroke();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
